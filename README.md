@@ -190,3 +190,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with modern NLP libraries (spaCy, NLTK, Transformers)
 - Inspired by academic paper summarization best practices
 - Template design optimized for readability and consistency
+
+
+This is Ahmed
