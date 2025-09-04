@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaperSummarizer - Academic Paper Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-file-alt me-2"></i>PaperSummarizer
+            </a>
+            <span class="navbar-text">
+                Academically rigorous research paper analysis
+            </span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0"><i class="fas fa-upload me-2"></i>Upload Research Paper</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tab Navigation -->
+                        <ul class="nav nav-tabs mb-4" id="inputTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-pane" type="button" role="tab">
+                                    <i class="fas fa-file-pdf me-1"></i>Upload File
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="url-tab" data-bs-toggle="tab" data-bs-target="#url-pane" type="button" role="tab">
+                                    <i class="fas fa-link me-1"></i>From URL
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-pane" type="button" role="tab">
+                                    <i class="fas fa-keyboard me-1"></i>Paste Text
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="inputTabContent">
+                            <!-- File Upload Tab -->
+                            <div class="tab-pane fade show active" id="file-pane" role="tabpanel">
+                                <form id="fileForm" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="fileInput" class="form-label">Select PDF or Text File</label>
+                                        <input type="file" class="form-control" id="fileInput" name="file" accept=".pdf,.txt" required>
+                                        <div class="form-text">Supported formats: PDF, TXT (Max: 16MB)</div>
+                                    </div>
+                                    <div class="metadata-section">
+                                        <h6 class="text-muted mb-3">Optional Metadata</h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="title" class="form-label">Title</label>
+                                                <input type="text" class="form-control" id="title" name="title" placeholder="Paper title">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="authors" class="form-label">Authors</label>
+                                                <input type="text" class="form-control" id="authors" name="authors" placeholder="Author names">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="venue_year" class="form-label">Venue/Year</label>
+                                                <input type="text" class="form-control" id="venue_year" name="venue_year" placeholder="e.g., ICML 2023">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="doi_or_arxiv" class="form-label">DOI/ArXiv</label>
+                                                <input type="text" class="form-control" id="doi_or_arxiv" name="doi_or_arxiv" placeholder="DOI or ArXiv ID">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-magic me-2"></i>Analyze Paper
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- URL Tab -->
+                            <div class="tab-pane fade" id="url-pane" role="tabpanel">
+                                <form id="urlForm">
+                                    <div class="mb-3">
+                                        <label for="urlInput" class="form-label">Paper URL</label>
+                                        <input type="url" class="form-control" id="urlInput" placeholder="https://arxiv.org/abs/..." required>
+                                        <div class="form-text">Supports ArXiv, PDF URLs, and academic paper pages</div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-download me-2"></i>Fetch & Analyze
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Text Tab -->
+                            <div class="tab-pane fade" id="text-pane" role="tabpanel">
+                                <form id="textForm">
+                                    <div class="mb-3">
+                                        <label for="textInput" class="form-label">Paper Text</label>
+                                        <textarea class="form-control" id="textInput" rows="10" placeholder="Paste the full paper text here..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-cogs me-2"></i>Analyze Text
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing paper... This may take a few moments.</p>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="errorAlert" class="alert alert-danger mt-4" style="display: none;">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Error</h5>
+                    <p id="errorMessage"></p>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="mt-4" style="display: none;">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>Analysis Complete</h4>
+                        </div>
+                        <div class="card-body">
+                            <!-- Result Tabs -->
+                            <ul class="nav nav-tabs mb-4" id="resultTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="markdown-result-tab" data-bs-toggle="tab" data-bs-target="#markdown-result" type="button" role="tab">
+                                        <i class="fab fa-markdown me-1"></i>Summary
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="json-result-tab" data-bs-toggle="tab" data-bs-target="#json-result" type="button" role="tab">
+                                        <i class="fas fa-code me-1"></i>JSON Data
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="resultTabContent">
+                                <!-- Markdown Result -->
+                                <div class="tab-pane fade show active" id="markdown-result" role="tabpanel">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h5>Research Paper Summary</h5>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('markdownContent')">
+                                            <i class="fas fa-copy me-1"></i>Copy
+                                        </button>
+                                    </div>
+                                    <div id="markdownContent" class="markdown-content border rounded p-3"></div>
+                                </div>
+
+                                <!-- JSON Result -->
+                                <div class="tab-pane fade" id="json-result" role="tabpanel">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <h5>Structured Data (JSON)</h5>
+                                        <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('jsonContent')">
+                                            <i class="fas fa-copy me-1"></i>Copy
+                                        </button>
+                                    </div>
+                                    <pre id="jsonContent" class="bg-light p-3 rounded"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-4">
+        <div class="container text-center">
+            <p class="text-muted mb-0">
+                <i class="fas fa-graduation-cap me-2"></i>
+                PaperSummarizer - Academically rigorous research paper analysis
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
