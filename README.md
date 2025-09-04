@@ -192,4 +192,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Template design optimized for readability and consistency
 
 
-This is Ahmed
